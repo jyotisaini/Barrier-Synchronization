@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
     int parity =0;
     int sense = 0;
     int i,p,j,k;
+    double startTime, endTime;
     int totalThreads = get_omp_num_threads();
     int threadNum = get_omp_thread_num();
 
@@ -60,9 +61,9 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        startTime= omp_get_wtime();
+        int startTime= omp_get_wtime();
         disseminationBarrier(localFlags,&snese, &rounds, &parity);
-        endTime = omp_get_wtime();
+        int endTime = omp_get_wtime();
 
         printf("Hello from thread %d . outside barrier. ", threadNum);
 
