@@ -1,11 +1,13 @@
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include "omp.h"
 
 #define NUM_THREADS 5
 
 typedef struct treenode{
 	bool parentSense;
-	bool * parentPointer
+	bool * parentPointer;
 	bool * childPointers[2];
 	bool haveChild[4];
 	bool childNotReady[4];
@@ -21,9 +23,9 @@ void treeBarrier (bool sense) {
 					(bool[]) {false, false, false, false}, 
 					sizeof (nodes[threadID].childNotReady)) != 0) {
 		for (int i = 0; i <  4; i++) {
-			nodes[i].childNotReady = nodes[i].haveChild;
+			nodes[threadID].childNotReady[i] = nodes[threadID].haveChild[i];
 		}
-		*nodes[i].parentPointer = false;
+		*nodes[threadID].parentPointer = false;
 		if (threadID != 0) {
 			while (nodes[threadID].parentSense != sense);
 		}
@@ -40,7 +42,7 @@ int main (int argc, char ** argv) {
 	for (int i = 0; i < NUM_THREADS; i++) {
 		for (int j = 0; j <  4; j++) {
 			nodes[i].haveChild[j] = 4 * i + j < NUM_THREADS ? true : false;
-			nodes[i].childNotReady = nodes[i].haveChild;
+			nodes[i].childNotReady[j] = nodes[i].haveChild[j];
 		}
 
 		nodes[i].parentPointer = i == 0 ? &nodes[i].dummy : &nodes[(i-1) / 4].childNotReady[(i-1) % 4];
