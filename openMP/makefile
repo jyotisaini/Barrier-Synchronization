@@ -15,4 +15,5 @@ mcs: mcs.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 
-clean: rm -f *.o disseminationBarrier  mcs
+clean:
+	rm -f *.o disseminationBarrier  mcs
