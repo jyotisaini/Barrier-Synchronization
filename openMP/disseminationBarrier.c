@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
         NUM_THREADS =  atoi(argv[1]);
         NUM_BARRIERS = atoi(argv[2]);
         //printf(" num threads %d\n", NUM_THREADS);
-       // printf(" num barrier %d\n", NUM_BARRIERS);
+        //printf(" num barrier %d\n", NUM_BARRIERS);
       }
     else 
     {
@@ -30,13 +30,13 @@ int main(int argc, char *argv[]) {
     }
 
     Flags totalProcessors[NUM_THREADS];
-    int rounds = ceil((log(NUM_THREADS)/log(2)));
-    printf("rounds = %d", rounds);
+    int rounds = ceil(log(NUM_THREADS)/log(2));;
+    //printf("rounds = %d", rounds);
     omp_set_num_threads(NUM_THREADS);
     double startTime, endTime;
    
 
-    #pragma omp parallel 
+    #pragma omp parallel
    {    
         int totalThreads = omp_get_num_threads();
         int threadNum = omp_get_thread_num();
@@ -47,20 +47,20 @@ int main(int argc, char *argv[]) {
         
         Flags *localFlags = &totalProcessors[threadNum];
        
-        printf("Hello from Inside Thread %d \n ", threadNum);
-    
+        
+        #pragma omp critical 
         for(i=0;i<NUM_THREADS;i++)
             for(p=0;p<2;p++) 
                 for (j=0;j<rounds;j++) 
-                    #pragma omp critical 
-                       totalProcessors[i].myflags[p][j]= 0;
+                     totalProcessors[i].myflags[p][j]= 0;
 
        for(j=0;j<NUM_BARRIERS; j++){
+         printf("Hello from Inside Thread %d Inside barrier %d \n  ", threadNum, j);
+         #pragma omp critical
+         {
          for (i=0;i<NUM_THREADS; i++) {
             for(k=0;k<rounds; k++) {
-              #pragma omp critical 
-              {
-                 notifyNodes = pow(2,k);
+                 notifyNodes = ceil(pow(2,k));
                  if( i==(threadNum+notifyNodes)%NUM_THREADS) {
                        totalProcessors[threadNum].partnerFlags[0][k] = &totalProcessors[i].myflags[0][k];
                        totalProcessors[threadNum].partnerFlags[1][k] = &totalProcessors[i].myflags[1][k];
