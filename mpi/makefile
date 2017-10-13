@@ -13,6 +13,9 @@ all: tournament
 
 tournament: tournament.o
 		$(MPICC) -o $@ $(LDFLAGS) $^ $(LDLIBS) -lm
+dissemination: disseminationBarrier.o
+		$(MPICC) -o $@ $(LDFLAGS) $^ $(LDLIBS) -lm
 clean:
 	rm -f *.o tournament
+	rm -f *.o disseminationBarrier
 
