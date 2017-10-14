@@ -7,38 +7,34 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#define rounds_first ceil(log(numprocessors)/log(2))
-#define rounds1 rounds_first
-#define NUM_BARRIERS 1
+#define NUM_BARRIERS 3
 
 typedef struct roundStruct {
 	int role;
-	int vpid;
-	int tb_round;
 	int opponent;
 }roundStruct;
 
-int numprocessors;
+int numProcessors;
 
 enum winStatus {WINNER, LOSER, BYE, CHAMPION, DROPOUT};
-void tounementBarrier(roundStruct array[numprocessors][10], int rank, int rounds );
+void tounementBarrier(roundStruct array[numProcessors][10], int rank, int rounds, int barrier );
 
 int main( int argc, char *argv[] ) {
-	double t0, t1, t_code;
-	int rank, my_dst, my_src;
+	double t0, t1;
+	int rank;
 	int tag = 1;
 
-	char filename[20];
-	MPI_Status mpi_result;
 	MPI_Init(&argc, &argv);
-
-	MPI_Comm_size(MPI_COMM_WORLD,&numprocessors);
+	MPI_Comm_size(MPI_COMM_WORLD,&numProcessors);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	int counter = 0;
-	int rounds = ceil(log(numprocessors)/log(2) );
-
-	roundStruct array[numprocessors][10];
+	int rounds = ceil(log(numProcessors)/log(2));
+    /*Testing 
+	printf("rounds : %d\n", rounds);
+	printf("numProcessors  %d", numProcessors);
+    */
+	roundStruct array[numProcessors][10];
 	double time1, time2;
 	int i, j, k, l;
 	j = rank;
@@ -49,50 +45,63 @@ int main( int argc, char *argv[] ) {
 	}
 
 	i=0;
-	int temp=0,temp2,g=0,comp,comp_second=0;
+	int g=0,compFirst,compSecond=0;
 	l = rank;
 
 	for( k=0; k<=rounds; k++ ) {
-		temp = k;
-		temp2= l;
-		comp = ceil(pow(2,k));
-		comp_second = ceil(pow(2,k-1));
+		compFirst = ceil(pow(2,k));
+		compSecond = ceil(pow(2,k-1));
 
-		if((k > 0) && (l%comp==0) && ((l + (comp_second))< numprocessors) && (comp < numprocessors))
+		//printf("compFirst : %d compSecond : %d\n", compFirst, compSecond);
+
+		if((k > 0) && (l%compFirst==0) && ((l + (compSecond))< numProcessors) && (compFirst < numProcessors))
 			array[l][k].role = WINNER;
 
-		if((k > 0) && (l%comp == 0) && ((l + comp_second)) >= numprocessors)
+		if((k > 0) && (l%compFirst == 0) && ((l + compSecond)) >= numProcessors)
 			array[l][k].role = BYE;
 		
-		if((k > 0) && ((l%comp == comp_second)))
+		if((k > 0) && ((l%compFirst == compSecond)))
 			array[l][k].role = LOSER;
 
-		if((k > 0) && (l==0) && (comp >= numprocessors))
+		if((k > 0) && (l==0) && (compFirst >= numProcessors))
 			array[l][k].role = CHAMPION;
 
-		if(k==0 ) 
+        if(k==0) 
 			array[l][k].role = DROPOUT;
 		
+		if(k==0 && numProcessors == 1) 
+		{
+			array[l][k].role = CHAMPION;
+			break;
+		}	
+		
 		if( array[l][k].role == LOSER )
-			array[l][k].opponent = l - comp_second;
+			array[l][k].opponent = l - compSecond;
 
 		if(array[l][k].role == WINNER || array[l][k].role == CHAMPION)
-			array[l][k].opponent = l+comp_second;
+			array[l][k].opponent = l+compSecond;
 		
 	}
+   
+	/* Debugging 
+
+	   printf("reached here %d", WINNER);
+
+	  for(i=0;i<numProcessors; i++)
+		for(j=0;j<=rounds;j++)
+			printf("array[%d][%d] => role => %d, opponent =>%d \n", i, j, array[i][j].role, array[i][j].opponent);
+     */
 
 	i = rank;
 	int f; double time=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
-    for( f=0; f<NUM_BARRIERS; f++ ){
-    	printf("Proc %d waiting at barrier %d\n",rank, f);
 
+    for( f=0; f<NUM_BARRIERS; f++ ){
     	t0 = MPI_Wtime();
-    	tounementBarrier(array,rank,rounds);
+    	tounementBarrier(array,rank,rounds,f);
     	t1 = MPI_Wtime();
         time+=t1-t0;
-
     }
 
 	printf("time taken by one processor%d is %f\n\n",rank,time/NUM_BARRIERS);
@@ -100,10 +109,15 @@ int main( int argc, char *argv[] ) {
 	return 0;
 }
 
-void tounementBarrier( roundStruct array[numprocessors][10], int rank, int rounds ) {
+void tounementBarrier( roundStruct array[numProcessors][10], int rank, int rounds , int barrier) {
 	int round=1, tag=1, my_msg=1;
 	int i;
 	MPI_Status *status;
+
+	if(numProcessors ==1)
+		return;
+
+	printf("Proc %d waiting at barrier %d\n",rank, barrier);
 
 	while(1) {
 		if( array[rank][round].role == WINNER ) {
