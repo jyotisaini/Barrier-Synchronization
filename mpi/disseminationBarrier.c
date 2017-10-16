@@ -43,7 +43,7 @@ int main () {
 		sleep (10);
 	}
 
-	for (int i = 0; i < 1; i ++) {
+	for (int i = 0; i < 2; i ++) {
 		printf ("Hello world from processor %d\n", worldRank);
 		printf ("Processor %d entering barrier %d\n", worldRank, i);
 		disseminationBarrier (worldRank, worldSize);
