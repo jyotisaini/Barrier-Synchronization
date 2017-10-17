@@ -6,14 +6,14 @@ CPPFLAGS = -g $(OMPFLAGS)
 LDFLAGS = -g $(OMPFLAGS)
 LDLIBS = $(OMPLIBS)
 
-all: disseminationBarrier mcs
+all: disseminationBarrier mcsBarrier
 
 disseminationBarrier: disseminationBarrier.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-mcs: mcs.o
+mcsBarrier: mcsBarrier.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 
 clean:
-	rm -f *.o disseminationBarrier  mcs
+	rm -f *.o disseminationBarrier mcsBarrier 

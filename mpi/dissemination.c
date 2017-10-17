@@ -42,8 +42,8 @@ int main () {
 	if (worldRank == 0) {
 		sleep (10);
 	}
-
-	for (int i = 0; i < 2; i ++) {
+	int i;
+	for (i = 0; i < 2; i ++) {
 		printf ("Hello world from processor %d\n", worldRank);
 		printf ("Processor %d entering barrier %d\n", worldRank, i);
 		disseminationBarrier (worldRank, worldSize);

@@ -18,11 +18,12 @@ treenode nodes[NUM_THREADS];
 
 void treeBarrier (bool sense) {
 	int threadID = omp_get_thread_num();
+	int i;
 
 	while (memcmp (nodes[threadID].childNotReady, 
 					(bool[]) {false, false, false, false}, 
 					sizeof (nodes[threadID].childNotReady)) != 0);
-	for (int i = 0; i <  4; i++) {
+	for (i = 0; i <  4; i++) {
 		nodes[threadID].childNotReady[i] = nodes[threadID].haveChild[i];
 	}
 	*nodes[threadID].parentPointer = false;
@@ -37,9 +38,9 @@ void treeBarrier (bool sense) {
 }
 
 int main (int argc, char ** argv) {
-	
-	for (int i = 0; i < NUM_THREADS; i++) {
-		for (int j = 0; j <  4; j++) {
+	int i, j;
+	for (i = 0; i < NUM_THREADS; i++) {
+		for (j = 0; j <  4; j++) {
 			nodes[i].haveChild[j] = 4 * i + j < NUM_THREADS - 1 ? true : false;
 			nodes[i].childNotReady[j] = nodes[i].haveChild[j];
 		}
