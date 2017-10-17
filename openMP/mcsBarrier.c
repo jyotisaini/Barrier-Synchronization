@@ -18,7 +18,7 @@ treenode nodes[NUM_THREADS];
 
 void treeBarrier (bool sense) {
 	int threadID = omp_get_thread_num();
-	inr i;
+	int i;
 
 	while (memcmp (nodes[threadID].childNotReady, 
 					(bool[]) {false, false, false, false}, 
