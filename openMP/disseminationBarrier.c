@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     int rounds = ceil(log(NUM_THREADS)/log(2));;
     //printf("rounds = %d", rounds);
     omp_set_num_threads(NUM_THREADS);
-    double startTime, endTime;
+    double startTime, endTime, totalTime;
    
 
     #pragma omp parallel
@@ -73,9 +73,11 @@ int main(int argc, char *argv[]) {
           endTime = omp_get_wtime();
           printf("Bye from thread %d outside barrier - %d.\n ", threadNum,j);
       }
-      printf(" total time spent inside  DisseminationBarrier id : %d is   %f \n",j, endTime - startTime );
+      printf(" total time spent inside  DisseminationBarrier id : %d is %f \n",j, endTime - startTime );
+      totalTime+=(endTime-startTime);
     
-    }        
+    } 
+    printf("total time spent per barrier averaged over NUM_BARRIERS is %f", totalTime/NUM_BARRIERS*1.0);       
 }
 
 void disseminationBarrier(Flags *localFlags, int *sense, int *rounds, int *parity) {
