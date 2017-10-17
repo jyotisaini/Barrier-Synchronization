@@ -2,6 +2,9 @@
 #include <stdbool.h>
 #include <omp.h>
 #include <mpi.h>
+#include <string.h>
+#include <math.h>
+#include <unistd.h>
 
 #define NUM_THREADS 5
 
