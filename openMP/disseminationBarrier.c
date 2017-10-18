@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     int rounds = ceil(log(NUM_THREADS)/log(2));;
     //printf("rounds = %d", rounds);
     omp_set_num_threads(NUM_THREADS);
-    double startTime, endTime, totalTime =0;
+    double startTime, endTime, totalTime;
    
 
     #pragma omp parallel
