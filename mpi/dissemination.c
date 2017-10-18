@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 #include <mpi.h>
 #include <unistd.h>
 
-#define NUM_NODES 8
+
 
 void disseminationBarrier (int rank, int numProcessors) {
 	int round = 0;

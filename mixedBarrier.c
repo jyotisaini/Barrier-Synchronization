@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <omp.h>
 #include <mpi.h>
@@ -17,27 +18,30 @@ typedef struct treenode{
 	bool dummy;
 } treenode;
 
-treenode nodes[NUM_THREADS];
-
-void treeBarrier (bool sense) {
+void treeBarrier (bool* sense, treenode * node) {
+	// printf("%c\n", node -> childNotReady[0]? 't' : 'f');
 	int threadID = omp_get_thread_num();
+	int i;
 
-	while (memcmp (nodes[threadID].childNotReady, 
-					(bool[]) {false, false, false, false}, 
-					sizeof (nodes[threadID].childNotReady)) != 0);
-	for (int i = 0; i <  4; i++) {
-		nodes[threadID].childNotReady[i] = nodes[threadID].haveChild[i];
+	while (memcmp (node -> childNotReady,
+					(bool[]){false, false, false, false},
+					sizeof (node -> childNotReady)) != 0);
+	
+	for (i = 0; i <  4; i++) {
+		node -> childNotReady[i] = node -> haveChild[i];
 	}
-	*nodes[threadID].parentPointer = false;
+	
+	*node -> parentPointer = false;
 	if (threadID != 0) {
-		while (nodes[threadID].parentSense != sense);
+		while (node -> parentSense != *sense);
 	}
-
-	*nodes[threadID].childPointers[0] = sense;
-	*nodes[threadID].childPointers[1] = sense;
-
-	sense = !sense;
+	bool * childPointer0 = node -> childPointers[0];
+	bool * childPointer1 = node -> childPointers[1];
+	*childPointer0 = *sense;
+	*childPointer1 = *sense;
+	*sense = !(*sense);
 }
+
 
 void disseminationBarrier (int rank, int numProcessors) {
 	int round = 0;
@@ -63,7 +67,7 @@ void disseminationBarrier (int rank, int numProcessors) {
 	}
 }
 
-int main () {
+int main (int argc, char ** argv) {
 	MPI_Init (NULL, NULL);
 
 	int worldSize;
@@ -72,30 +76,52 @@ int main () {
 	int worldRank;
 	MPI_Comm_rank (MPI_COMM_WORLD, &worldRank);
 
-	for (int i = 0; i < NUM_THREADS; i++) {
-		for (int j = 0; j <  4; j++) {
-			nodes[i].haveChild[j] = 4 * i + j < NUM_THREADS - 1 ? true : false;
-			nodes[i].childNotReady[j] = nodes[i].haveChild[j];
+	int num_threads, num_barriers;
+
+	if (argc == 3) {
+		num_threads = atoi (argv[1]);
+		num_barriers = atoi (argv[2]);
+	}
+	omp_set_num_threads(num_threads);
+	treenode * nodes[num_threads];
+	int i, j;
+	for (i = 0; i < num_threads; i++) {
+		nodes[i] = (treenode *) malloc (sizeof(treenode));
+	}
+	for (i = 0; i < num_threads; i++) {
+		
+		bool dummy = nodes[i] -> dummy;
+		for (j = 0; j <  4; j++) {
+			nodes[i] -> haveChild[j] = 4 * i + j < num_threads - 1 ? true : false;
+			nodes[i] -> childNotReady[j] = nodes[i] -> haveChild[j];
 		}
 
-		nodes[i].parentPointer = i == 0 ? &nodes[i].dummy : &nodes[(i-1) / 4].childNotReady[(i-1) % 4];
-		nodes[i].childPointers[0] = 2 * i + 1 < NUM_THREADS ? &nodes[2 * i + 1].parentSense : &nodes[i].dummy;
-		nodes[i].childPointers[1] = 2 * i + 2 < NUM_THREADS ? &nodes[2 * i + 2].parentSense : &nodes[i].dummy;
+		nodes[i] -> parentPointer = i == 0 ? &dummy : &(nodes[(i-1) / 4] -> childNotReady[(i-1) % 4]);
+		nodes[i] -> childPointers[0] = 2 * i + 1 < num_threads ? &(nodes[2 * i + 1] -> parentSense) : &dummy;
+		nodes[i] -> childPointers[1] = 2 * i + 2 < num_threads ? &(nodes[2 * i + 2] -> parentSense) : &dummy;
 
-		nodes[i].parentSense = false;
-		nodes[i].dummy = false;
+		nodes[i] -> parentSense = false;
+		nodes[i] -> dummy = false;
 	}
 
-	omp_set_num_threads(NUM_THREADS);
-
+	// printf ("%c\n", nodes[0] -> childNotReady[0]);
 	#pragma omp parallel
 	{
-		bool sense = true;
+		bool * sense = (bool*) malloc(sizeof(bool));
+		*sense = true;
 		int ID = omp_get_thread_num();
-		printf ("Thread %d entering MCS Barrier\n", ID);
-		treeBarrier (sense);
-		printf ("Thread %d exiting MCS Barrier\n", ID);
+		int k;
+		for (k = 0; k < num_barriers; k++) {
+			printf ("Thread %d entering MCS Barrier %d\n", ID, k);
+			treeBarrier (sense, nodes[ID]);
+			printf ("Thread %d exiting MCS Barrier %d\n", ID, k);
+		}
+		
+		free (sense);
+	}
 
+	for (i = 0; i < num_threads; i++) {
+		free (nodes[i]);
 	}
 
 	if (worldRank == 0) {
