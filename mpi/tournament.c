@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/time.h>
 #define NUM_BARRIERS 3
 
 typedef struct roundStruct {
@@ -93,18 +94,21 @@ int main( int argc, char *argv[] ) {
      */
 
 	i = rank;
-	int f; double time=0;
+	int f; double elapsedTime=0;
+	struct timeval startTime, endTime;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-    for( f=0; f<NUM_BARRIERS; f++ ){
-    	t0 = MPI_Wtime();
+    for( f=0; f<NUM_BARRIERS; f++) {
+    	gettimeofday(&startTime, NULL);
     	tounementBarrier(array,rank,rounds,f);
-    	t1 = MPI_Wtime();
-        time+=t1-t0;
+    	gettimeofday(&endTime, NULL);
+    	elapsedTime=(endTime.tv_sec-startTime.tv_sec)*1000.0;
+    	elapsedTime+=(endTime.tv_usec=startTime.tv_usec)/1000.0;
     }
-
-	printf("time taken by one processor%d is %f\n\n",rank,time/NUM_BARRIERS);
+  //  printf("elapsed time %f\n", elapsedTime );
+    printf("time taken by one processor%d  is %f\n\n",rank,elapsedTime/NUM_BARRIERS*1.0);
+	
 	MPI_Finalize();
 	return 0;
 }
