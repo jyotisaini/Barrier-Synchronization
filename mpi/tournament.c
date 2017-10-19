@@ -8,7 +8,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/time.h>
-#define NUM_BARRIERS 3
 
 typedef struct roundStruct {
 	int role;
@@ -24,11 +23,20 @@ int main( int argc, char *argv[] ) {
 	double t0, t1;
 	int rank;
 	int tag = 1;
+	int NUM_BARRIERS;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD,&numProcessors);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+
+     if(argc==2) 
+        NUM_BARRIERS = atoi(argv[1]);
+    else 
+    {
+        printf("Syntax : ./tournament <#number of processors> \n");
+        exit(-1);
+    }
 	int counter = 0;
 	int rounds = ceil(log(numProcessors)/log(2));
     /*Testing 
@@ -36,7 +44,6 @@ int main( int argc, char *argv[] ) {
 	printf("numProcessors  %d", numProcessors);
     */
 	roundStruct array[numProcessors][10];
-	double time1, time2;
 	int i, j, k, l;
 	j = rank;
 
