@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 #include <mpi.h>
 #include <unistd.h>
 
-#define NUM_NODES 8
+
 
 void disseminationBarrier (int rank, int numProcessors) {
 	int round = 0;
@@ -12,20 +14,15 @@ void disseminationBarrier (int rank, int numProcessors) {
 	MPI_Request sendRequest, recvRequest;
 	MPI_Status status;
 	while (round < (int)ceil(log(numProcessors * 1.0) / log(2.0))) {
-		// if(sendRequest) {
-		// 	MPI_Wait(&sendRequest, &status);
-		// }
 		int recepient = (rank - (int)pow (2, round)) % numProcessors;
 		if (recepient < 0) {
 			recepient = recepient + numProcessors;
 		}
 		
 		MPI_Isend(&sendBuf, 1, MPI_INT, (rank + (int)pow (2, round)) % numProcessors, 0, MPI_COMM_WORLD, &sendRequest);
-		printf ("sent message from %d to %d\n", rank, (rank + (int)pow (2, round)) % numProcessors);
 		MPI_Irecv(&recvBuf, 1, MPI_INT, recepient, 0, MPI_COMM_WORLD, &recvRequest);
 
 		MPI_Wait (&recvRequest, &status);
-		printf ("Received message sent from %d to %d\n", recepient, rank);
 		round ++;
 	}
 }
