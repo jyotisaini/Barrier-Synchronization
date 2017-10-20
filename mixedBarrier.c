@@ -131,7 +131,7 @@ int main (int argc, char ** argv) {
 
 		free (sense);
 	}
-	printf("Total time spent per OMP barrier averaged over NUM_BARRIERS is %f \n", totalTimeOMP/(num_barriers*num_threads*1.0));
+	printf("Total time spent per OMP barrier averaged over num_barriers and num_threads is %f \n", totalTimeOMP/(num_barriers*num_threads*1.0));
 
 	for (i = 0; i < num_threads; i++) {
 		free (nodes[i]);
@@ -154,6 +154,6 @@ int main (int argc, char ** argv) {
 	elapsedTimeMPI += (end.tv_sec - start.tv_sec)*1000.0;
 	elapsedTimeMPI += (end.tv_usec - start.tv_usec)/1000.0;
 	totalTimeMPI+=elapsedTimeMPI;	
-    printf("Total time spent per MPI barrier averaged over NUM_BARRIERS is %f \n", totalTimeOMP/(num_barriers*1.0));
+    printf("Total time spent per MPI barrier averaged over NUM_BARRIERS is %f \n", totalTimeMPI/(num_barriers*1.0));
     MPI_Finalize();
 }
