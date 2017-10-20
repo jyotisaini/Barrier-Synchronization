@@ -5,7 +5,7 @@
 for threads in 2 4 6 8
 do 
 ./disseminationBarrier $threads 5000  >> disseminationBarrier$threads.log
-./mcsBarrier >> mcsBarrier$threads.log 
+./mcsBarrier $threads 5000 >> mcsBarrier$threads.log 
 done
 
 

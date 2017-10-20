@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<sys/time.h>
+#include "../nthPrime.c"
 #define MAX_THREADS 8
 
 typedef struct Flags
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
         Flags *localFlags = &totalProcessors[threadNum];
         
        for(j=0;j<NUM_BARRIERS; j++){
+         long a =  getPrime(10000);
          printf("Thread %d- entering barrier %d \n  ", threadNum, j);
             for(k=0;k<rounds; k++) {
                  notifyNodes = ceil(pow(2,k));

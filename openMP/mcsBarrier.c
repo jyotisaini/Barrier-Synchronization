@@ -3,7 +3,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/time.h>
-#include "omp.h"
+#include <omp.h>
+
+#include "../nthPrime.c"
 
 
 typedef struct treenode{
@@ -84,6 +86,7 @@ int main (int argc, char ** argv) {
 		struct timeval start, end;
 		double elapsedTime = 0.0;
 		for (k = 0; k < num_barriers; k++) {
+			long n = getPrime (10000);
 			printf ("Thread %d entering MCS Barrier %d\n", ID, k);
 			gettimeofday (&start, NULL);
 			treeBarrier (sense, nodes[ID]);
