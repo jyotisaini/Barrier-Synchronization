@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
    {    
         int totalThreads = omp_get_num_threads();
         int threadNum = omp_get_thread_num();
+        double elapsedTime = 0.0;
 
         int parity = 0;
         int sense = 1;
@@ -63,15 +64,17 @@ int main(int argc, char *argv[]) {
            gettimeofday(&startTime, NULL);
            disseminationBarrier(localFlags, &sense, &rounds, &parity);
            gettimeofday(&endTime, NULL);
-           double elapsedTime = (endTime.tv_sec - startTime.tv_sec)*1000.0;
-           elapsedTime+=(endTime.tv_usec -startTime.tv_usec)/1000.0;
+           elapsedTime += (endTime.tv_sec - startTime.tv_sec)*1000.0;
+           elapsedTime += (endTime.tv_usec - startTime.tv_usec)/1000.0;
            printf("Thread %d exiting barrier - %d.\n ", threadNum,j);
            //printf("Total time spent by thread id : %d inside DisseminationBarrier id : %d is %f \n",threadNum, j, elapsedTime);
-           #pragma omp critical
+           
+          } 
+
+          #pragma omp critical
            {
             totalTime+=elapsedTime;
-           }
-          }   
+           }  
       }
       printf("Total time spent per barrier averaged over NUM_BARRIERS is %f \n", totalTime/(NUM_BARRIERS*NUM_THREADS*1.0));
 } 

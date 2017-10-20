@@ -116,8 +116,8 @@ int main( int argc, char *argv[] ) {
     	gettimeofday(&startTime, NULL);
     	tounementBarrier(array,rank,rounds,f);
     	gettimeofday(&endTime, NULL);
-    	elapsedTime=(endTime.tv_sec-startTime.tv_sec)*1000.0;
-    	elapsedTime+=(endTime.tv_usec=startTime.tv_usec)/1000.0;
+    	elapsedTime += (endTime.tv_sec - startTime.tv_sec)*1000.0;
+    	elapsedTime += (endTime.tv_usec - startTime.tv_usec)/1000.0;
     }
   //  printf("elapsed time %f\n", elapsedTime );
     printf("time taken by one processor%d  is %f\n\n",rank,elapsedTime/NUM_BARRIERS*1.0);
