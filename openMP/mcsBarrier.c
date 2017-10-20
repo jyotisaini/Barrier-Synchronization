@@ -97,7 +97,7 @@ int main (int argc, char ** argv) {
 			elapsedTime += (end.tv_usec - start.tv_usec) / 1000.0;
 		}
 		
-		printf ("Average time spent by thread %d in MCS Barrier is %f\n", ID ,elapsedTime/(num_barriers * 1.0));
+		// printf ("Average time spent by thread %d in MCS Barrier is %f\n", ID ,elapsedTime/(num_barriers * 1.0));
 		free (sense);
 		#pragma omp critical
 		{
