@@ -70,11 +70,13 @@ int main (int argc, char ** argv) {
 	int worldRank;
 	MPI_Comm_rank (MPI_COMM_WORLD, &worldRank);
 
-	int num_threads, num_barriers;
+	int num_threads, num_barriers,nPrime;
 
-	if (argc == 3) {
+	if (argc == 4) {
 		num_threads = atoi (argv[1]);
 		num_barriers = atoi (argv[2]);
+		nPrime = atoi (argv[2]);
+		
 	}
 	omp_set_num_threads(num_threads);
 	treenode * nodes[num_threads];
@@ -106,7 +108,7 @@ int main (int argc, char ** argv) {
 		int ID = omp_get_thread_num();
 		int k;
 		for (k = 0; k < num_barriers; k++) {
-			long a = getPrime(10000);
+			long a = getPrime (nPrime);
 			printf ("Thread %d entering MCS Barrier %d\n", ID, k);
 			treeBarrier (sense, nodes[ID]);
 			printf ("Thread %d exiting MCS Barrier %d\n", ID, k);
@@ -126,7 +128,7 @@ int main (int argc, char ** argv) {
 	for (int i = 0; i < num_barriers; i ++) {
 		printf ("Hello world from processor %d\n", worldRank);
 		printf ("Processor %d entering barrier %d\n", worldRank, i);
-		long a = getPrime(10000);
+		long a = getPrime (nPrime);
 		disseminationBarrier (worldRank, worldSize);
 		printf ("Processor %d out of barrier %d\n", worldRank, i);
 	}
