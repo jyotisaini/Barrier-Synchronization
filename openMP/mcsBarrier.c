@@ -44,14 +44,15 @@ void treeBarrier (bool* sense, treenode * node) {
 
 int main (int argc, char ** argv) {
 
-	int num_threads, num_barriers;
+	int num_threads, num_barriers, nPrime;
 	double timeTaken = 0.0;
 
-	if (argc == 3) {
+	if (argc == 4) {
 		num_threads = atoi (argv[1]);
 		num_barriers = atoi (argv[2]);
+		nPrime = atoi (argv[3]);
 	} else {
-		printf ("Syntax error: Corect syntax is ./mcsBarrier <num_processors> <num_barriers>\n");
+		printf ("Syntax error: Corect syntax is ./mcsBarrier <num_processors> <num_barriers> <prime_count>\n");
 		return -1;
 	}
 	omp_set_num_threads(num_threads);
@@ -86,7 +87,7 @@ int main (int argc, char ** argv) {
 		struct timeval start, end;
 		double elapsedTime = 0.0;
 		for (k = 0; k < num_barriers; k++) {
-			long n = getPrime (10000);
+			long n = getPrime (nPrime);
 			printf ("Thread %d entering MCS Barrier %d\n", ID, k);
 			gettimeofday (&start, NULL);
 			treeBarrier (sense, nodes[ID]);

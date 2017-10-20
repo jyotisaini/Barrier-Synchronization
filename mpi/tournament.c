@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#include "../nthPrime.c"
+
 typedef struct roundStruct {
 	int role;
 	int opponent;
@@ -23,18 +25,21 @@ int main( int argc, char *argv[] ) {
 	double t0, t1;
 	int rank;
 	int tag = 1;
-	int NUM_BARRIERS;
+	int NUM_BARRIERS, nPrime;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD,&numProcessors);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 
-     if(argc==2) 
-        NUM_BARRIERS = atoi(argv[1]);
+	if(argc==3) {
+
+		NUM_BARRIERS = atoi(argv[1]);
+		nPrime = atoi (argv[2]);
+	}
     else 
     {
-        printf("Syntax : ./tournament <#number of processors> \n");
+        printf("Syntax : ./tournament <#number of processors> <prime_count>\n");
         exit(-1);
     }
 	int counter = 0;
@@ -107,6 +112,7 @@ int main( int argc, char *argv[] ) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
     for( f=0; f<NUM_BARRIERS; f++) {
+    	long a = getPrime (nPrime);
     	gettimeofday(&startTime, NULL);
     	tounementBarrier(array,rank,rounds,f);
     	gettimeofday(&endTime, NULL);

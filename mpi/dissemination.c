@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#include "../nthPrime.c"
+
 
 void disseminationBarrier (int rank, int numProcessors) {
 	int round = 0;
@@ -30,13 +32,15 @@ void disseminationBarrier (int rank, int numProcessors) {
 int main (int argc, char ** argv) {
 	MPI_Init (NULL, NULL);
 	int numBarriers;
+	int nPrime;
 	struct timeval start, end;
 	double elapsedTime = 0.0;
 
-	if (argc == 2) {
+	if (argc == 3) {
 		numBarriers = atoi (argv[1]);
+		nPrime = atoi (argv[2]);
 	} else {
-		printf ("Syntax Error: Correct syntax is ./dissemination <num_barriers>\n");
+		printf ("Syntax Error: Correct syntax is ./dissemination <num_barriers> <prime_count>\n");
 		return -1;
 	}
 
@@ -51,6 +55,7 @@ int main (int argc, char ** argv) {
 	// }
 	int i;
 	for (i = 0; i < numBarriers; i ++) {
+		long a = getPrime (nPrime);
 		printf ("Hello world from processor %d\n", worldRank);
 		printf ("Processor %d entering barrier %d\n", worldRank, i);
 
