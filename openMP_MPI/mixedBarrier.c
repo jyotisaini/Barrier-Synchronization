@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
-#include "./nthPrime.c"
+#include "../nthPrime.c"
 #include<sys/time.h>
 
 
