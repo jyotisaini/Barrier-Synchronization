@@ -67,6 +67,8 @@ int main( int argc, char *argv[] ) {
 
 		//printf("compFirst : %d compSecond : %d\n", compFirst, compSecond);
 
+		/* statically deciding Winner and Loser for each round*/
+
 		if((k > 0) && (l%compFirst==0) && ((l + (compSecond))< numProcessors) && (compFirst < numProcessors))
 			array[l][k].role = WINNER;
 
@@ -119,7 +121,6 @@ int main( int argc, char *argv[] ) {
     	elapsedTime += (endTime.tv_sec - startTime.tv_sec)*1000.0;
     	elapsedTime += (endTime.tv_usec - startTime.tv_usec)/1000.0;
     }
-  //  printf("elapsed time %f\n", elapsedTime );
     printf("time taken by one processor%d  is %f\n\n",rank,elapsedTime/NUM_BARRIERS*1.0);
 	
 	MPI_Finalize();
@@ -137,12 +138,15 @@ void tounementBarrier( roundStruct array[numProcessors][10], int rank, int round
 	printf("Proc %d waiting at barrier %d\n",rank, barrier);
 
 	while(1) {
+
 		if( array[rank][round].role == WINNER ) {
+			/* wait on loser to inform winner */
 			int opponent_rank_loser_to_wait_on = array[rank][round].opponent;
 			MPI_Recv( &my_msg, 1, MPI_INT, opponent_rank_loser_to_wait_on, tag, MPI_COMM_WORLD,NULL );
 		}
 
 		if( array[rank][round].role == LOSER ) {
+            /* send message to winner for that round */
 			int opponent_winner = array[rank][round].opponent;
 			MPI_Send(&my_msg,1,MPI_INT,opponent_winner,tag,MPI_COMM_WORLD);
 			MPI_Recv(&my_msg,1,MPI_INT,opponent_winner,tag,MPI_COMM_WORLD,NULL);
@@ -159,6 +163,8 @@ void tounementBarrier( roundStruct array[numProcessors][10], int rank, int round
 		if( round <= rounds )
 			round = round +1;
 	}
+
+	/* wakeup tree */
 
 	while(1) {
 		if( round > 0 )
