@@ -1,26 +1,28 @@
-INTRODUCTION:
+###INTRODUCTION:
 
 Barriers are used in multithreaded programs where the application requires that all threads
 reach a certain point of execution in the program before anything else executes. These are thus, phases
 in the program execution.
 
-*****************************************Open MP Barriers*****************************************
+###Open MP Barriers
 
 Open MP barriers are generally used in multithreaded environment to bring the threads to a certain
 standpoint. We have implemented three barriers in OpenMP, all from the MCS paper:
 
 --Dissemination Barrier
+
 --MCS Tree Barrier
 
-**************************************Open MPI Barriers******************************************
+###Open MPI Barriers
 
 Open MPI barriers are used to synchronize different processors on a SMP system. We have
 implemented two barriers in Open MPI again from the MCS paper:
 
 -- Tournament Barrier
+
 -- Dissemination Barrier
 
-**************************************Open MP-MPI Combined Barriers******************************
+###Open MP-MPI Combined Barriers
 
 We combined the MCS barrier of the OpenMP and Dissemination of OpenMPI to
 get a combined barrier. We synchronize every thread in every process and then synchronize the
@@ -28,7 +30,7 @@ processes. We did this so since each processor will have some amount of work to 
 
 
 
-******************************Compiling and running the code:****************************************
+###Compiling and running the code:
 
 We include three makefiles, one for OpenMP barriers and one for MPI barriers and other for MPI-MP
 barrier. Running make creates the object files for the barrier implementations that can be run as
@@ -40,6 +42,7 @@ prompt as follows:
 	(./barriername : ( disseminationBarrier , mcsBarrier)).
 
 MPI barriers can be run as follows:
+
 	mpirun –np (number_of_processors) –hostfile (hosts_to_run_on) barriername num_barriers nthPrime
 	(barriername : (dissemination , tournament)).
 
