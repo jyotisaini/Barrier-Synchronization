@@ -53,13 +53,16 @@ void disseminationBarrier (int rank, int numProcessors) {
 			recepient = recepient + numProcessors;
 		}
 		
+		//Send message to corresponding partner based on the round
 		MPI_Isend(&sendBuf, 1, MPI_INT, (rank + (int)pow (2, round)) % numProcessors, 0, MPI_COMM_WORLD, &sendRequest);
 		MPI_Irecv(&recvBuf, 1, MPI_INT, recepient, 0, MPI_COMM_WORLD, &recvRequest);
 
+		//wait to receive message from the corresponding partner
 		MPI_Wait (&recvRequest, &status);
 		round ++;
 	}
 }
+
 
 int main (int argc, char ** argv) {
 	MPI_Init (NULL, NULL);

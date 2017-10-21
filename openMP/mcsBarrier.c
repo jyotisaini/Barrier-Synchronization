@@ -63,12 +63,14 @@ int main (int argc, char ** argv) {
 	}
 	for (i = 0; i < num_threads; i++) {
 		
+		//Arrival Tree Setup
 		bool dummy = nodes[i] -> dummy;
 		for (j = 0; j <  4; j++) {
 			nodes[i] -> haveChild[j] = 4 * i + j < num_threads - 1 ? true : false;
 			nodes[i] -> childNotReady[j] = nodes[i] -> haveChild[j];
 		}
 
+		//wake-up tree setup
 		nodes[i] -> parentPointer = i == 0 ? &dummy : &(nodes[(i-1) / 4] -> childNotReady[(i-1) % 4]);
 		nodes[i] -> childPointers[0] = 2 * i + 1 < num_threads ? &(nodes[2 * i + 1] -> parentSense) : &dummy;
 		nodes[i] -> childPointers[1] = 2 * i + 2 < num_threads ? &(nodes[2 * i + 2] -> parentSense) : &dummy;
@@ -77,7 +79,7 @@ int main (int argc, char ** argv) {
 		nodes[i] -> dummy = false;
 	}
 
-	// printf ("%c\n", nodes[0] -> childNotReady[0]);
+	
 	#pragma omp parallel
 	{
 		bool * sense = (bool*) malloc(sizeof(bool));
@@ -97,7 +99,7 @@ int main (int argc, char ** argv) {
 			elapsedTime += (end.tv_usec - start.tv_usec) / 1000.0;
 		}
 		
-		// printf ("Average time spent by thread %d in MCS Barrier is %f\n", ID ,elapsedTime/(num_barriers * 1.0));
+		
 		free (sense);
 		#pragma omp critical
 		{
