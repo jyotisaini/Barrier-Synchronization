@@ -1,13 +1,11 @@
 OMPLIBS = -lgomp
 
-CC = gcc
+CC = mpicc
 CPPFLAGS = -g 
 LDFLAGS = -g 
 LDLIBS = $(OMPLIBS)
 
 MPICC = mpicc
-MPICH = /opt/openmpi-1.4.3-gcc44
-CFLAGS = -I$(MPICH)/include
 
 all: tournament dissemination
 

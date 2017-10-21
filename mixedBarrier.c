@@ -7,6 +7,7 @@
 #include <math.h>
 #include <unistd.h>
 #include "./nthPrime.c"
+#include<sys/time.h>
 
 
 typedef struct treenode{
@@ -75,6 +76,7 @@ int main (int argc, char ** argv) {
 
 	int num_threads, num_barriers,nPrime;
 
+
 	if (argc == 4) {
 		num_threads = atoi (argv[1]);
 		num_barriers = atoi (argv[2]);
@@ -83,6 +85,8 @@ int main (int argc, char ** argv) {
 	}
 	omp_set_num_threads(num_threads);
 	treenode * nodes[num_threads];
+	double totalTimeOMP=0.0,elapsedTimeMPI=0.0;
+	struct timeval start, end;
 	int i, j;
 	for (i = 0; i < num_threads; i++) {
 		nodes[i] = (treenode *) malloc (sizeof(treenode));
@@ -103,22 +107,33 @@ int main (int argc, char ** argv) {
 		nodes[i] -> dummy = false;
 	}
 
-	// printf ("%c\n", nodes[0] -> childNotReady[0]);
 	#pragma omp parallel
 	{
 		bool * sense = (bool*) malloc(sizeof(bool));
 		*sense = true;
+		double elapsedTime = 0.0;
+	    struct timeval startTime, endTime;
 		int ID = omp_get_thread_num();
 		int k;
 		for (k = 0; k < num_barriers; k++) {
 			long a = getPrime (nPrime);
 			printf ("Thread %d entering MCS Barrier %d\n", ID, k);
+			gettimeofday(&startTime, NULL);
 			treeBarrier (sense, nodes[ID]);
+			gettimeofday(&endTime, NULL);
 			printf ("Thread %d exiting MCS Barrier %d\n", ID, k);
+			elapsedTime += (endTime.tv_sec - startTime.tv_sec)*1000.0;
+		    elapsedTime += (endTime.tv_usec - startTime.tv_usec)/1000.0;
 		}
 		
+		#pragma omp critical
+		{
+			totalTimeOMP+=elapsedTime;
+		}
+
 		free (sense);
 	}
+	printf("Total time spent per OMP barrier averaged over num_barriers and num_threads is %f \n", totalTimeOMP/(num_barriers*num_threads*1.0));
 
 	for (i = 0; i < num_threads; i++) {
 		free (nodes[i]);
@@ -128,13 +143,19 @@ int main (int argc, char ** argv) {
 		sleep (10);
 	}
 
-	for (int i = 0; i < num_barriers; i ++) {
+	for ( i = 0; i < num_barriers; i ++) {
 		printf ("Hello world from processor %d\n", worldRank);
 		printf ("Processor %d entering barrier %d\n", worldRank, i);
 		long a = getPrime (nPrime);
+		gettimeofday(&start, NULL);
 		disseminationBarrier (worldRank, worldSize);
+		gettimeofday(&end, NULL);
+		
 		printf ("Processor %d out of barrier %d\n", worldRank, i);
+		elapsedTimeMPI += (end.tv_sec - start.tv_sec)*1000.0;
+	    elapsedTimeMPI += (end.tv_usec - start.tv_usec)/1000.0;
 	}
-
-	MPI_Finalize();
+		
+    printf("Total time spent per MPI barrier averaged over NUM_BARRIERS is %f \n", elapsedTimeMPI/(num_barriers*1.0));
+    MPI_Finalize();
 }
